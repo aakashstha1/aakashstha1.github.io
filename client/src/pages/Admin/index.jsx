@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import AdminExperiences from "./AdminExperiences";
 import AdminProjects from "./AdminProjects";
 import AdminContact from "./AdminContact";
+import Links from "./Links";
 
 function Admin() {
   const { portfolioData } = useSelector((state) => state.root);
@@ -59,6 +60,11 @@ function Admin() {
       key: "5",
       label: "Contact",
       children: <AdminContact />,
+    },
+    {
+      key: "6",
+      label: "Links",
+      children: <Links />,
     },
   ];
 

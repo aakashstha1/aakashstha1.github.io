@@ -1,14 +1,15 @@
 const router = require("express").Router();
-const { request } = require("express");
 const {
   Intro,
   About,
   Experience,
   Project,
   Contact,
+  Link,
 } = require("../models/portfolioModel");
 
 const User = require("../models/userModel");
+
 
 //get all portfolio data
 router.get("/get-portfolio-data", async (req, res) => {
@@ -18,6 +19,7 @@ router.get("/get-portfolio-data", async (req, res) => {
     const projects = await Project.find();
     const experiences = await Experience.find();
     const contact = await Contact.find();
+    const links = await Link.find();
 
     res.status(200).send({
       intro: intros[0],
@@ -25,6 +27,7 @@ router.get("/get-portfolio-data", async (req, res) => {
       projects: projects,
       experiences: experiences,
       contact: contact[0],
+      link: links[0],
     });
   } catch (error) {
     res.status(500).send(error);
@@ -34,29 +37,41 @@ router.get("/get-portfolio-data", async (req, res) => {
 //update intro
 router.post("/update-intro", async (req, res) => {
   try {
-    console.log(req.body);
-    const intro = await Intro.findOneAndUpdate(
-      { _id: req.body._id },
-      req.body,
-      { new: true }
-    );
+    const { _id, welcomeText, firstName, lastName, caption, description } =
+      req.body;
+
+    let updatedData = {
+      welcomeText,
+      firstName,
+      lastName,
+      caption,
+      description,
+    };
+
+
+    // Update the intro document in the database
+    const intro = await Intro.findOneAndUpdate({ _id }, updatedData, {
+      new: true,
+    });
+
     res.status(200).send({
       data: intro,
       success: true,
-      message: "Intro update succesfully",
+      message: "Intro updated successfully",
     });
   } catch (error) {
-    res.status(500).send(error);
+    console.error("Error updating intro:", error);
+    res.status(500).send({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 });
-
 //update about
 // Define the POST route to update "About" section data
 router.post("/update-about", async (req, res) => {
   try {
-    // Log the incoming request body to verify data being sent
-    console.log(req.body);
-
     // Attempt to find and update the document in the "About" collection
     // Use the _id from the request body to identify the document
     // `new: true` ensures the response will contain the updated document
@@ -137,7 +152,7 @@ router.post("/add-project", async (req, res) => {
       data: project,
       success: true,
       message: "Project added succesfully",
-    });
+    });z
   } catch (error) {
     res.status(500).send(error);
   }
@@ -228,6 +243,9 @@ router.post("/admin-login", async (req, res) => {
   }
 });
 
+
+
+
 // Get project details by ID
 router.get("/project-details/:id", async (req, res) => {
   const { id } = req.params; // Extract ID from request parameters
@@ -242,6 +260,23 @@ router.get("/project-details/:id", async (req, res) => {
     }
   } catch (error) {
     res.status(500).send({ message: "Error fetching project", error });
+  }
+});
+
+//update Links
+router.post("/update-url", async (req, res) => {
+  try {
+    console.log(req.body);
+    const link = await Link.findOneAndUpdate({ _id: req.body._id }, req.body, {
+      new: true,
+    });
+    res.status(200).send({
+      data: link,
+      success: true,
+      message: "URL update succesfully",
+    });
+  } catch (error) {
+    res.status(500).send(error);
   }
 });
 

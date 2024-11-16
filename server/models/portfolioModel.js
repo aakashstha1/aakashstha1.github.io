@@ -83,9 +83,6 @@ const projectSchema = new mongoose.Schema({
   websiteURL: {
     type: String,
   },
-  keyFeatures: {
-    type: String,
-  },
   techUsed: {
     type: Array,
     required: true,
@@ -115,10 +112,34 @@ const contactSchema = new mongoose.Schema({
   },
 });
 
+const linkSchema = new mongoose.Schema({
+  fbURL: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  instaURL: {
+    type: String,
+    required: true,
+  },
+  linkedinURL: {
+    type: String,
+    required: true,
+  },
+  githubURL: {
+    type: String,
+    required: true,
+  },
+});
+
 module.exports = {
   Intro: mongoose.model("intros", introSchema),
   About: mongoose.model("abouts", aboutSchema),
   Experience: mongoose.model("experiences", experienceSchema),
   Project: mongoose.model("projects", projectSchema),
   Contact: mongoose.model("contacts", contactSchema),
+  Link: mongoose.model("links", linkSchema),
 };

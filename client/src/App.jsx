@@ -12,8 +12,8 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import Loader from "./components/Loader";
 import Login from "./pages/Admin/Login";
-import ProjectDetail from "./components/ProjectDetail";
 import PageNotFound from "./components/PageNotFound";
+import SingleProject from "./components/SingleProject";
 
 function App() {
   const { loading, portfolioData, reloadData } = useSelector(
@@ -57,8 +57,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin-login" element={<Login />} />
-          <Route path="/project-details/:id" element={<ProjectDetail />} />
-          <Route path="/page-not-found" element={<PageNotFound />} />
+          <Route path="/project-details/:id" element={<SingleProject />} />
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
       )}
     </BrowserRouter>

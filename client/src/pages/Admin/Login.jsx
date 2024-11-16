@@ -17,12 +17,10 @@ function Login() {
   const login = async () => {
     try {
       dispatch(ShowLoading());
-      console.log(user);
       const response = await axios.post(
         "http://localhost:5000/api/portfolio/admin-login",
         user
       );
-      dispatch(HideLoading());
       if (response.data.success) {
         message.success(response.data.message);
         localStorage.setItem("token", JSON.stringify(response.data));
@@ -35,12 +33,17 @@ function Login() {
     } catch (error) {
       dispatch(HideLoading());
       message.error(error.message);
+    } finally {
+      dispatch(HideLoading());
     }
   };
 
   return (
     <div className="box flex justify-center items-center h-screen bg-primary">
-      <div className="w-96 flex gap-3 flex-col shadow border border-gray-400 p-5">
+      <form
+        onSubmit={login}
+        className="w-96 flex gap-3 flex-col shadow border border-gray-400 p-5"
+      >
         <h1 className="flex justify-center text-tubeLight-effect py-2">
           Admin Login
         </h1>
@@ -71,13 +74,15 @@ function Login() {
             {/* Toggle button text */}
           </span>
         </div>
-        <button
+        <div className="flex justify-end p-0">
+          <h1 className="text-sm text-secondary underline">Forget Password?</h1>
+        </div>
+        <input
+          type="submit"
+          value="Login"
           className="bg-secondary text-primary px-3 py-2 font-semibold"
-          onClick={login}
-        >
-          Login
-        </button>
-      </div>
+        />
+      </form>
 
       <div className="wave wave1"></div>
       <div className="wave wave2"></div>

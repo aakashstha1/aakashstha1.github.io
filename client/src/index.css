@@ -75,3 +75,7 @@ textarea {
       1px 1px 2px rgba(64, 224, 208, 0.2);
   }
 }
+
+pre{
+  font-family: Mo;
+}

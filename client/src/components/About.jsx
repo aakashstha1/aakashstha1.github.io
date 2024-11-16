@@ -28,10 +28,10 @@ function About({ aboutData }) {
           />
         </div>
 
-        <div className="flex flex-col gap-5 w-1/2 text-white p-5 sm:w-full sm:items-center">
+        <div className="flex flex-col gap-5 w-1/2 text-white p-5 sm:w-full sm:items-center ">
           <p className="text-justify">{aboutData.description1}</p>
-          <p className="text-justify">{aboutData.description2}</p>
-          <Button text="Download CV" className="w-52 m-2 flex justify-center" />
+          <p className="text-justify ">{aboutData.description2}</p>
+          {/* <Button text="Download CV" className="w-52 m-2 flex justify-center" /> */}
         </div>
       </div>
 

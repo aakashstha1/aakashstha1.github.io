@@ -52,12 +52,42 @@ function AdminAbout() {
         <Form.Item name="imgURL" label="Image Url">
           <input placeholder="Image URL" required />
         </Form.Item>
-        <Form.Item name="description1" label="Description1">
-          <textarea placeholder="Description1" required />
+        <Form.Item
+          name="description1"
+          label={
+            <span>
+              Description1{" "}
+              <span className="text-gray-400">(max 500 characters)</span>
+            </span>
+          }
+          rules={[
+            {
+              max: 500, // Maximum 500 characters
+              message: "Description1 cannot exceed 500 characters.",
+            },
+          ]}
+        >
+          <textarea placeholder="Description1" maxLength={500} required />
         </Form.Item>
-        <Form.Item name="description2" label="Description2">
-          <textarea placeholder="Description2" required />
+
+        <Form.Item
+          name="description2"
+          label={
+            <span>
+              Description2{" "}
+              <span className="text-gray-400">(max 500 characters)</span>
+            </span>
+          }
+          rules={[
+            {
+              max: 500, // Maximum 500 characters
+              message: "Description2 cannot exceed 500 characters.",
+            },
+          ]}
+        >
+          <textarea placeholder="Description2" maxLength={500} required />
         </Form.Item>
+
         <Form.Item name="skills" label="Skills">
           <textarea placeholder="Skills" required />
         </Form.Item>

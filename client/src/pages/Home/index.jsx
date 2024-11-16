@@ -10,6 +10,7 @@ import Experiences from "../../components/Experiences";
 
 function Home() {
   const { portfolioData } = useSelector((state) => state.root);
+
   return (
     <div>
       {portfolioData && (
@@ -22,7 +23,7 @@ function Home() {
             <Project projectData={portfolioData.projects} />
             <Contact contactData={portfolioData.contact} />
             <Footer />
-            <SocialMedia />
+            <SocialMedia links={portfolioData.link} />
           </div>
         </div>
       )}

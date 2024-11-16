@@ -26,6 +26,8 @@ function AdminProjects() {
   // Function to handle form submission (add/update)
   const onFinish = async (values) => {
     try {
+      const tempTechUsed = values.techUsed.split(",");
+      values.techUsed = tempTechUsed;
       dispatch(ShowLoading());
       let response;
 
@@ -167,13 +169,32 @@ function AdminProjects() {
           <Form
             onFinish={onFinish}
             layout="vertical"
-            initialValues={selectedItemForEdit}
+            initialValues={
+              selectedItemForEdit
+                ? {
+                    ...selectedItemForEdit,
+                    techUsed: selectedItemForEdit.techUsed.join(", "),
+                  }
+                : {}
+            }
           >
             <Form.Item name="title" label="Title">
               <input placeholder="Title" />
             </Form.Item>
             <Form.Item name="imgURL" label="Image URL">
               <input placeholder="Image URL" />
+            </Form.Item>
+            <Form.Item name="githubURL" label="Github URL">
+              <input placeholder="Github URL" />
+            </Form.Item>
+            <Form.Item name="figmaURL" label="Figma URL">
+              <input placeholder="Figma URL" />
+            </Form.Item>
+            <Form.Item name="websiteURL" label="Website URL">
+              <input placeholder="Website URL" />
+            </Form.Item>
+            <Form.Item name="techUsed" label="Technology Used">
+              <input placeholder="Technology Used" />
             </Form.Item>
             <Form.Item name="description" label="Description">
               <textarea placeholder="Description" />
