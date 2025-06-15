@@ -8,7 +8,6 @@ Intro.propTypes = {
     lastName: PropTypes.string.isRequired,
     caption: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
-    resume: PropTypes.string.isRequired, // Ensure this is a URL or path to the resume file
   }).isRequired,
 };
 
@@ -23,15 +22,11 @@ function Intro({ introData }) {
         {introData.caption}
       </h1>
 
-      <p className="text-white w-2/3 text-justify leading-6">{introData.description}</p>
+      <p className="text-white w-2/3 text-justify leading-6">
+        {introData.description}
+      </p>
 
-      {/* Button to download the resume */}
-      <Button
-        type="primary"
-        href={introData.resume} // Ensure 'resume' is a valid file URL or path
-        download={`${introData.firstName}_${introData.lastName}_Resume.pdf`}
-        text="Download CV"
-      />
+      <Button text="Download CV" className="w-52 m-2 flex justify-center" />
     </div>
   );
 }

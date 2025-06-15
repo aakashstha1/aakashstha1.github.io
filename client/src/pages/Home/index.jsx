@@ -17,7 +17,7 @@ function Home() {
         <div>
           <Navbar />
           <div className="bg-primary px-40 sm:px-5">
-            <Intro introData={portfolioData.intro} /> {/* Updated to `intro` */}
+            <Intro introData={portfolioData.intro} /> 
             <About aboutData={portfolioData.about} />
             <Experiences experienceData={portfolioData.experiences} />
             <Project projectData={portfolioData.projects} />

@@ -8,10 +8,15 @@ About.propTypes = {
     description1: PropTypes.string.isRequired,
     description2: PropTypes.string.isRequired,
     skills: PropTypes.array.isRequired,
+    resume: PropTypes.string.isRequired,
   }).isRequired,
+  introData: PropTypes.shape({
+    firstName: PropTypes.string.isRequired,
+    lastName: PropTypes.string.isRequired,
+  }),
 };
 
-function About({ aboutData }) {
+function About({ aboutData, introData }) {
   const skills = aboutData.skills || [];
 
   return (
@@ -31,7 +36,13 @@ function About({ aboutData }) {
         <div className="flex flex-col gap-5 w-1/2 text-white p-5 sm:w-full sm:items-center ">
           <p className="text-justify">{aboutData.description1}</p>
           <p className="text-justify ">{aboutData.description2}</p>
-          {/* <Button text="Download CV" className="w-52 m-2 flex justify-center" /> */}
+          <Button
+            type="primary"
+            className="w-52 m-2 flex justify-center"
+            // href={aboutData.resume} // Ensure 'resume' is a valid file URL or path
+            // download={`${introData.firstName}_${introData.lastName}_Resume.pdf`}
+            text="Download CV"
+          />
         </div>
       </div>
 

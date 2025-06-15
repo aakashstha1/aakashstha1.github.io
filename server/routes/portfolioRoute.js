@@ -8,7 +8,7 @@ const {
   Link,
 } = require("../models/portfolioModel");
 
-const User = require("../models/userModel");
+const User = require("../models/user.model");
 
 
 //get all portfolio data
