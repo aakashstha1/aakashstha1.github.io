@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const aboutSchema = new mongoose.Schema(
   {
-    imgURL: { type: String, required: true, trim: true },
     description1: { type: String, required: true, trim: true },
     description2: { type: String, required: true, trim: true },
     skills: { type: [String], required: true },
