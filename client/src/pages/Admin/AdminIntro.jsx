@@ -1,74 +1,123 @@
-import React from "react";
-import { Form } from "antd";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  ShowLoading,
-  HideLoading,
-  SetPortfolioData,
-} from "../../redux/rootSlice";
+import { message, Input } from "antd";
 import axios from "axios";
-import { message } from "antd";
+import { useEffect, useState } from "react";
+import { LoadingOutlined } from "@ant-design/icons";
+
+const { TextArea } = Input;
 
 function AdminIntro() {
-  const dispatch = useDispatch();
+  const API_URL = import.meta.env.VITE_API_URL;
+  const [loading, setLoading] = useState(false);
 
-  const { portfolioData } = useSelector((state) => state.root);
-  const onFinish = async (values) => {
-    try {
-      dispatch(ShowLoading());
-      const response = await axios.post(
-        "http://localhost:5000/api/portfolio/update-intro",
-        {
-          ...values,
-          _id: portfolioData.intro._id,
-        }
-      );
-      dispatch(HideLoading());
-      if (response.data.success) {
-        dispatch(
-          SetPortfolioData({ ...portfolioData, intro: response.data.data })
-        );
-        message.success(response.data.message);
-      } else {
-        message.error(response.data.message);
+  const [formData, setFormData] = useState({
+    welcomeText: "",
+    firstName: "",
+    lastName: "",
+    caption: "",
+    description: "",
+  });
+
+  useEffect(() => {
+    const fetchIntro = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/get-intro`, {
+          withCredentials: true,
+        });
+        setFormData(res.data.data);
+      } catch (error) {
+        console.log(error);
+        message.error("Failed to load intro data");
       }
+    };
+    fetchIntro();
+  }, [API_URL]);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const res = await axios.put(`${API_URL}/update-intro`, formData, {
+        withCredentials: true,
+      });
+      message.success(res.data.message);
     } catch (error) {
-      dispatch(HideLoading());
       message.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
-    <div>
-      <Form
-        onFinish={onFinish}
-        layout="vertical"
-        initialValues={portfolioData.intro}
-      >
-        <Form.Item name="welcomeText" label="Welcome Text">
-          <input placeholder="Intro" required />
-        </Form.Item>
-        <Form.Item name="firstName" label="First Name">
-          <input placeholder="First Name" required />
-        </Form.Item>
-        <Form.Item name="lastName" label="Last Name">
-          <input placeholder="Last Name" required />
-        </Form.Item>
-        <Form.Item name="caption" label="Caption">
-          <input placeholder="Caption" required />
-        </Form.Item>
-        <Form.Item name="description" label="Description">
-          <textarea placeholder="Description" required />
-        </Form.Item>
-        <div className=" flex justify-end w-full">
-          <button
-            className="px-10 py-2 bg-primary text-secondary"
-            type="submit"
-          >
-            SAVE
-          </button>
-        </div>
-      </Form>
-    </div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div>
+        <label>Welcome Text</label>
+        <Input
+          name="welcomeText"
+          placeholder="Intro"
+          value={formData.welcomeText}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <label>First Name</label>
+        <Input
+          name="firstName"
+          placeholder="First Name"
+          value={formData.firstName}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <label>Last Name</label>
+        <Input
+          name="lastName"
+          placeholder="Last Name"
+          value={formData.lastName}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <label>Caption</label>
+        <Input
+          name="caption"
+          placeholder="Caption"
+          value={formData.caption}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <label>Description</label>
+        <TextArea
+          name="description"
+          placeholder="Description"
+          value={formData.description}
+          onChange={handleChange}
+          required
+          rows={4}
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          className="px-10 py-2 bg-primary text-white rounded"
+          disabled={loading}
+        >
+          {loading ? <LoadingOutlined /> : "SAVE"}
+        </button>
+      </div>
+    </form>
   );
 }
 

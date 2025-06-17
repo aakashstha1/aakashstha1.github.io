@@ -1,16 +1,23 @@
-import PropTypes from "prop-types";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
-SocialMedia.propTypes = {
-  links: PropTypes.shape({
-    fbURL: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
-    instaURL: PropTypes.string.isRequired,
-    linkedinURL: PropTypes.string.isRequired,
-    githubURL: PropTypes.string.isRequired,
-  }).isRequired,
-};
 
-function SocialMedia({ links }) {
+function SocialMedia() {
+    const [links, setLinks] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  const fetchLinks = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/get-links`);
+      setLinks(res?.data?.data);
+    } catch (error) {
+      console.error("Failed to fetch intro:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLinks();
+  }, []);
   return (
     <div className="fixed left-0 bottom-0 px-10 sm:static">
       <div className="flex flex-col items-center ">

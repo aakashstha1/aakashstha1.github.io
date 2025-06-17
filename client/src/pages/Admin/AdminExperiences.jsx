@@ -1,108 +1,156 @@
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { Modal, Form, message } from "antd";
-import {
-  HideLoading,
-  ReloadData,
-  SetPortfolioData,
-  ShowLoading,
-} from "../../redux/rootSlice";
+import { useEffect, useState } from "react";
+import { Modal, Input, message } from "antd";
 import axios from "axios";
 
 function AdminExperiences() {
-  const dispatch = useDispatch();
-  const { portfolioData } = useSelector((state) => state.root);
-  const { experiences } = portfolioData;
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  // State for showing/hiding the modal
+  const [experiences, setExperiences] = useState([]);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
-
-  // State for tracking the selected experience for editing
   const [selectedItemForEdit, setSelectedItemForEdit] = useState(null);
-
-  // State for determining whether to add or edit
   const [type, setType] = useState("add");
+  const [formData, setFormData] = useState({
+    period: "",
+    company: "",
+    title: "",
+    description: "",
+  });
 
-  // Function to handle form submission (add/update)
-  const onFinish = async (values) => {
+  const fetchExperiences = async () => {
     try {
-      dispatch(ShowLoading());
-      let response;
+      const res = await axios.get(`${API_URL}/exp/get`);
+      if (res.data.success) {
+        setExperiences(res.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+      message.error("Failed to fetch experiences");
+    }
+  };
 
-      // Update experience if selected item exists, otherwise add new experience
-      if (selectedItemForEdit) {
-        response = await axios.post(
-          "http://localhost:5000/api/portfolio/update-experience",
-          {
-            ...values,
-            _id: selectedItemForEdit._id,
+  const handleAddExperience = async () => {
+    try {
+      const url = `${API_URL}/exp/add`;
+      const res = await axios.post(url, formData, { withCredentials: true });
+
+      if (res.data.success) {
+        message.success(res.data.message);
+        resetForm();
+        fetchExperiences();
+      } else {
+        message.error(res.data.message);
+      }
+    } catch (err) {
+      message.error(err.message || "Add failed");
+    }
+  };
+
+  const handleUpdateExperience = async () => {
+    try {
+      const url = `${API_URL}/exp/update/${selectedItemForEdit._id}`;
+      const res = await axios.put(url, formData, { withCredentials: true });
+
+      if (res.data.success) {
+        message.success(res.data.message);
+        resetForm();
+        fetchExperiences();
+      } else {
+        message.error(res.data.message);
+      }
+    } catch (err) {
+      message.error(err.message || "Update failed");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.period.trim()) {
+      message.error("Period is required");
+      return;
+    }
+    if (!formData.company.trim()) {
+      message.error("Company is required");
+      return;
+    }
+    if (!formData.title.trim()) {
+      message.error("Title is required");
+      return;
+    }
+    if (type === "edit" && selectedItemForEdit) {
+      await handleUpdateExperience();
+    } else {
+      await handleAddExperience();
+    }
+  };
+
+  const resetForm = () => {
+    setShowAddEditModal(false);
+    setSelectedItemForEdit(null);
+    setFormData({
+      period: "",
+      company: "",
+      title: "",
+      description: "",
+    });
+  };
+
+  const onDelete = (item) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this experience?",
+      content: `${item.title} at ${item.company}`,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          const res = await axios.delete(`${API_URL}/exp/${item._id}`, {
+            withCredentials: true,
+          });
+
+          if (res.data.success) {
+            message.success(res.data.message);
+            fetchExperiences();
+          } else {
+            message.error(res.data.message);
           }
-        );
-      } else {
-        response = await axios.post(
-          "http://localhost:5000/api/portfolio/add-experience",
-          values
-        );
-      }
-
-      dispatch(HideLoading());
-
-      // Handle the response from the server
-      if (response.data.success) {
-        dispatch(
-          SetPortfolioData({
-            ...portfolioData,
-            experiences: response.data.data,
-          })
-        );
-        message.success(response.data.message);
-        setShowAddEditModal(false);
-        setSelectedItemForEdit(null);
-        dispatch(HideLoading());
-        dispatch(ReloadData(true));
-      } else {
-        message.error(response.data.message);
-      }
-    } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
-    }
-  };
-
-  // Function to delete an experience
-  const onDelete = async (item) => {
-    try {
-      dispatch(ShowLoading());
-      const response = await axios.post(
-        "http://localhost:5000/api/portfolio/delete-experience",
-        {
-          _id: item._id,
+        } catch (err) {
+          message.error(err.message || "Delete failed");
         }
-      );
-      dispatch(HideLoading());
-
-      // Handle the response from the server
-      if (response.data.success) {
-        message.success(response.data.message);
-        dispatch(HideLoading());
-        dispatch(ReloadData(true));
-      } else {
-        message.error(response.data.message);
-      }
-    } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
-    }
+      },
+    });
   };
+
+  useEffect(() => {
+    fetchExperiences();
+  }, []);
+
+  useEffect(() => {
+    if (type === "edit" && selectedItemForEdit) {
+      setFormData({
+        period: selectedItemForEdit.period,
+        company: selectedItemForEdit.company,
+        title: selectedItemForEdit.title,
+        description: selectedItemForEdit.description,
+      });
+    } else {
+      setFormData({
+        period: "",
+        company: "",
+        title: "",
+        description: "",
+      });
+    }
+  }, [selectedItemForEdit, type]);
 
   return (
     <div>
-      {/* Button to open the modal for adding a new experience */}
+      {/* Add Button */}
       <div className="flex justify-end">
         <button
           className="bg-primary px-5 py-2 text-secondary mb-5 flex items-center gap-4"
           onClick={() => {
             setSelectedItemForEdit(null);
+            setType("add");
             setShowAddEditModal(true);
           }}
         >
@@ -110,7 +158,7 @@ function AdminExperiences() {
         </button>
       </div>
 
-      {/* List of experiences displayed in a grid */}
+      {/* Experience Cards */}
       <div className="grid grid-cols-4 gap-5">
         {experiences.map((experience, index) => (
           <div
@@ -133,24 +181,20 @@ function AdminExperiences() {
               <span className="text-primary font-semibold">Description :</span>{" "}
               {experience.description}
             </h1>
-
-            {/* Edit and Delete buttons */}
             <div className="flex justify-end mt-5 gap-5">
               <button
                 className="bg-blue-500 text-white px-4 py-2"
                 onClick={() => {
                   setSelectedItemForEdit(experience);
-                  setShowAddEditModal(true);
                   setType("edit");
+                  setShowAddEditModal(true);
                 }}
               >
                 Edit
               </button>
               <button
                 className="bg-red-500 text-white px-4 py-2"
-                onClick={() => {
-                  onDelete(experience);
-                }}
+                onClick={() => onDelete(experience)}
               >
                 Delete
               </button>
@@ -159,48 +203,63 @@ function AdminExperiences() {
         ))}
       </div>
 
-      {/* Modal for adding/editing an experience */}
+      {/* Modal */}
       {(type === "add" || selectedItemForEdit) && (
         <Modal
           open={showAddEditModal}
-          title={selectedItemForEdit ? "Edit Experiences" : "Add Experience"}
+          title={selectedItemForEdit ? "Edit Experience" : "Add Experience"}
           footer={null}
           onCancel={() => {
             setShowAddEditModal(false);
             setSelectedItemForEdit(null);
           }}
         >
-          <Form
-            onFinish={onFinish}
-            layout="vertical"
-            initialValues={selectedItemForEdit}
-          >
-            <Form.Item name="period" label="Period">
-              <input placeholder="Period" />
-            </Form.Item>
-            <Form.Item name="company" label="Company">
-              <input placeholder="Company" />
-            </Form.Item>
-            <Form.Item name="title" label="Title">
-              <input placeholder="Title" />
-            </Form.Item>
-            <Form.Item name="description" label="Description">
-              <textarea placeholder="Description" />
-            </Form.Item>
-
-            {/* Close and Add/Update buttons */}
-            <div className="flex justify-end">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Input
+              placeholder="Period"
+              value={formData.period}
+              onChange={(e) =>
+                setFormData({ ...formData, period: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Company"
+              value={formData.company}
+              onChange={(e) =>
+                setFormData({ ...formData, company: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Title"
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+            />
+            <Input.TextArea
+              placeholder="Description"
+              rows={4}
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+            />
+            <div className="flex justify-end gap-3 mt-3">
               <button
+                type="button"
                 className="border-primary text-primary px-5 py-2"
                 onClick={() => setShowAddEditModal(false)}
               >
                 CLOSE
               </button>
-              <button className="bg-primary text-secondary px-5 py-2">
+              <button
+                className="bg-primary text-secondary px-5 py-2"
+                type="submit"
+              >
                 {selectedItemForEdit ? "Update" : "Add"}
               </button>
             </div>
-          </Form>
+          </form>
         </Modal>
       )}
     </div>

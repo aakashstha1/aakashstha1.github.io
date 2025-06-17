@@ -53,37 +53,22 @@ export const updateAbout = async (req, res) => {
       });
     }
 
-    // Prepare updated data
-    const updatedData = {};
-
-    if (description1 && description1 !== about.description1)
-      updatedData.description1 = description1;
-    if (description2 && description2 !== about.description2)
-      updatedData.description2 = description2;
+    about.description1 = description1 || about.description1;
+    about.description2 = description2 || about.description2;
     if (
       skills &&
       Array.isArray(skills) &&
       JSON.stringify(skills) !== JSON.stringify(about.skills)
-    )
-      updatedData.skills = skills;
-
-    if (Object.keys(updatedData).length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "No changes detected",
-      });
+    ) {
+      about.skills = skills;
     }
 
-    const updatedAbout = await About.findByIdAndUpdate(
-      about._id,
-      { $set: updatedData },
-      { new: true }
-    );
+    const savedAbout = await about.save();
 
     res.status(200).json({
       success: true,
       message: "About section updated successfully",
-      data: updatedAbout,
+      data: savedAbout,
     });
   } catch (error) {
     console.error("Error updating about:", error);

@@ -9,8 +9,9 @@ import { authentication } from "../middleware/authentication.js";
 import { getIntro, updateIntro } from "../controllers/intro.controller.js";
 import { getAbout, updateAbout } from "../controllers/about.controller.js";
 import {
-  getContact,
-  updateContact,
+  // getContact,
+  sendMsg,
+  // updateContact,
 } from "../controllers/contact.controller.js";
 import { getLinks, updateLinks } from "../controllers/link.controller.js";
 
@@ -31,8 +32,9 @@ router.route("/get-about").get(getAbout);
 router.route("/update-about").put(authentication, updateAbout);
 
 //Contact routes
-router.route("/get-contact").get(getContact);
-router.route("/update-contact").put(authentication, updateContact);
+// router.route("/get-contact").get(getContact);
+// router.route("/update-contact").put(authentication, updateContact);
+router.route("/sendMsg").post(sendMsg);
 
 //Links routes
 router.route("/get-links").get(getLinks);

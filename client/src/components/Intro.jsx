@@ -1,17 +1,24 @@
+import axios from "axios";
 import Button from "./Button";
-import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
 
-Intro.propTypes = {
-  introData: PropTypes.shape({
-    welcomeText: PropTypes.string.isRequired,
-    firstName: PropTypes.string.isRequired,
-    lastName: PropTypes.string.isRequired,
-    caption: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-  }).isRequired,
-};
+function Intro() {
+  const [introData, setIntroData] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL;
 
-function Intro({ introData }) {
+  const fetchIntro = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/get-intro`);
+      setIntroData(res?.data?.data);
+    } catch (error) {
+      console.error("Failed to fetch intro:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchIntro();
+  }, []);
+
   return (
     <div className="h-[90vh] bg-primary flex flex-col items-start justify-center gap-8 p-6">
       <h1 className="text-white text-xl font-bold">{introData.welcomeText}</h1>

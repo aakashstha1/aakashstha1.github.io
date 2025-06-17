@@ -1,22 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SectionTitle from "./SectionTitle";
-import PropTypes from "prop-types";
+import axios from "axios";
 
-// Define PropTypes for the component
-Experiences.propTypes = {
-  experienceData: PropTypes.arrayOf(
-    PropTypes.shape({
-      period: PropTypes.string.isRequired,
-      company: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-};
-
-function Experiences({ experienceData }) {
+function Experiences() {
   const [selectedPeriod, setSelectedPeriod] = useState(0);
+  const API_URL = import.meta.env.VITE_API_URL;
+  const [experienceData, setExperienceData] = useState([]);
 
+  const fetchExperiences = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/exp/get`);
+      setExperienceData(res?.data?.data || []);
+      console.log(res?.data?.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchExperiences();
+  }, []);
 
   return (
     <div>
@@ -46,17 +49,19 @@ function Experiences({ experienceData }) {
         </div>
 
         {/* Right Section - Selected Experience Details */}
-        <div className="flex flex-col gap-5">
-          <h1 className="text-secondary text-2xl font-bold">
-            {experienceData[selectedPeriod].title}
-          </h1>
-          <h1 className="text-white text-md">
-            {experienceData[selectedPeriod].company}
-          </h1>
-          <p className="text-silver">
-            {experienceData[selectedPeriod].description}
-          </p>
-        </div>
+        {experienceData.length > 0 && (
+          <div className="flex flex-col gap-5">
+            <h1 className="text-secondary text-2xl font-bold">
+              {experienceData[selectedPeriod].title}
+            </h1>
+            <h1 className="text-white text-md">
+              {experienceData[selectedPeriod].company}
+            </h1>
+            <p className="text-silver">
+              {experienceData[selectedPeriod].description}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

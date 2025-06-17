@@ -1,0 +1,27 @@
+import Contact from "../../components/Contact";
+import Navbar from "../../components/Navbar";
+import Intro from "../../components/Intro";
+import Project from "../../components/Project";
+import About from "../../components/About";
+import Footer from "../../components/Footer";
+import SocialMedia from "../../components/SocialMedia";
+import Experiences from "../../components/Experiences";
+
+function Home() {
+  return (
+    <div>
+      <Navbar />
+      <div className="bg-primary px-40 sm:px-5">
+        <Intro />
+        <About />
+        <Experiences />
+        <Project />
+        <Contact />
+        <Footer />
+        <SocialMedia />
+      </div>
+    </div>
+  );
+}
+
+export default Home;

@@ -38,8 +38,9 @@ export const sendResetSuccessEmail = async (email) => {
 export const submitMessage = async (name, email, phone, message) => {
   try {
     await transporter.sendMail({
-      from: email,
-      to: "aakash.078.godawari.edu.np",
+      from: sender,
+      to: "aakash.078@godawari.edu.np",
+        replyTo: email,
       subject: `New contact form message from ${name}`,
       html: CONTACT_FORM_SUBMISSION_TEMPLATE.replace("{name}", name)
         .replace("{email}", email)

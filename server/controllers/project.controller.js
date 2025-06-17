@@ -1,7 +1,7 @@
 import Project from "../models/project.model.js";
 import User from "../models/user.model.js";
-import fs from "fs";
-import path from "path";
+
+import { deleteCloudinaryFile } from "../utils/cloudinaryDeletion.js";
 
 // --------------------------------------------Get projects--------------------------------------------------
 
@@ -15,7 +15,7 @@ export const getAllProjects = async (req, res) => {
       });
     }
 
-    res.status(200).json({ success: true, projects });
+    res.status(200).json({ success: true, data: projects });
   } catch (error) {
     console.error("Error fetching projects:", error.message);
     res.status(500).json({
@@ -54,10 +54,17 @@ export const addProject = async (req, res) => {
   try {
     const userId = req.userId;
 
-    const { title, description, githubURL, figmaURL, websiteURL, techUsed } =
-      req.body;
+    const { title, githubURL, figmaURL, websiteURL } = req.body;
 
-    const imgURL = req.file ? req.file.path : null;
+    if (!req.file || !req.file.mimetype.startsWith("image/")) {
+      return res.status(400).json({
+        success: false,
+        message: "Only image files are allowed",
+      });
+    }
+
+    const imgURL = req.file.path;
+    console.log(req.file);
 
     // Validate user existence
     const user = await User.findById(userId);
@@ -69,24 +76,23 @@ export const addProject = async (req, res) => {
     }
 
     // Ensure techUsed is always an array of strings
-    let techArray = [];
-    if (Array.isArray(techUsed)) {
-      techArray = techUsed;
-    } else if (typeof techUsed === "string") {
-      techArray = techUsed
-        .split(",")
-        .map((tech) => tech.trim())
-        .filter(Boolean);
-    }
+    // let techArray = [];
+    // if (Array.isArray(techUsed)) {
+    //   techArray = techUsed;
+    // } else if (typeof techUsed === "string") {
+    //   techArray = techUsed
+    //     .split(",")
+    //     .map((tech) => tech.trim())
+    //     .filter(Boolean);
+    // }
 
     const newProject = new Project({
       title,
-      description,
-      imgURL,
+      imgURL: req.file.secure_url,
+      cloudinaryId: req.file.public_id,
       githubURL,
       figmaURL,
       websiteURL,
-      techUsed: techArray,
       user: userId,
     });
 
@@ -113,8 +119,7 @@ export const updateProject = async (req, res) => {
     const userId = req.userId;
     const { projectId } = req.params;
 
-    const { title, description, githubURL, figmaURL, websiteURL, techUsed } =
-      req.body;
+    const { title, githubURL, figmaURL, websiteURL } = req.body;
 
     const imgURL = req.file ? req.file.path : req.body.imgURL;
 
@@ -127,46 +132,13 @@ export const updateProject = async (req, res) => {
       });
     }
 
-    // Prepare updated fields only if changed
-    const updatedFields = {};
-    if (title && title !== project.title) updatedFields.title = title;
-    if (description && description !== project.description)
-      updatedFields.description = description;
-    if (imgURL && imgURL !== project.imgURL) updatedFields.imgURL = imgURL;
-    if (githubURL && githubURL !== project.githubURL)
-      updatedFields.githubURL = githubURL;
-    if (figmaURL && figmaURL !== project.figmaURL)
-      updatedFields.figmaURL = figmaURL;
-    if (websiteURL && websiteURL !== project.websiteURL)
-      updatedFields.websiteURL = websiteURL;
-    let techArray = [];
-    if (Array.isArray(techUsed)) {
-      techArray = techUsed;
-    } else if (typeof techUsed === "string") {
-      techArray = techUsed
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
-    }
-    if (
-      techArray.length &&
-      JSON.stringify(techArray) !== JSON.stringify(project.techUsed)
-    ) {
-      updatedFields.techUsed = techArray;
-    }
+    project.title = title || project.title;
+    project.githubURL = githubURL || project.githubURL;
+    project.figmaURL = figmaURL || project.figmaURL;
+    project.websiteURL = websiteURL || project.websiteURL;
+    if (imgURL) project.imgURL = imgURL;
 
-    if (Object.keys(updatedFields).length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "No changes detected",
-      });
-    }
-
-    const updatedProject = await Project.findByIdAndUpdate(
-      project._id,
-      { $set: updatedFields },
-      { new: true }
-    );
+    const updatedProject = await project.save();
 
     res.status(200).json({
       success: true,
@@ -193,16 +165,10 @@ export const deleteProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    if (project.imgURL) {
-      const filePath = path.resolve("uploads", path.basename(project.imgURL));
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error("Failed to delete image file:", err.message);
-        } else {
-          console.log("Image file deleted:", filePath);
-        }
-      });
-    }
+    const resourceType = project.imgURL?.endsWith(".pdf") ? "raw" : "image";
+
+    // Call helper to delete file from Cloudinary
+    await deleteCloudinaryFile(project.cloudinaryId, resourceType);
 
     await Project.findByIdAndDelete(projectId);
 

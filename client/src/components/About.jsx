@@ -1,36 +1,33 @@
 import SectionTitle from "./SectionTitle";
 import Button from "./Button";
-import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Lottie from "lottie-react";
+import aboutAnimation from "../assets/lottie/about.json";
 
-About.propTypes = {
-  aboutData: PropTypes.shape({
-    imgURL: PropTypes.string.isRequired,
-    description1: PropTypes.string.isRequired,
-    description2: PropTypes.string.isRequired,
-    skills: PropTypes.array.isRequired,
-    resume: PropTypes.string.isRequired,
-  }).isRequired,
-  introData: PropTypes.shape({
-    firstName: PropTypes.string.isRequired,
-    lastName: PropTypes.string.isRequired,
-  }),
-};
+function About() {
+  const [aboutData, setAboutData] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL;
 
-function About({ aboutData, introData }) {
-  const skills = aboutData.skills || [];
+  const fetchAbout = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/get-about`);
+      setAboutData(res?.data?.data);
+    } catch (error) {
+      console.error("Failed to fetch intro:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAbout();
+  }, []);
 
   return (
     <div id="about">
       <SectionTitle title="About" />
       <div className="flex w-full items-center sm:flex-col ">
         <div className="h-[60vh] w-1/2 flex sm:w-full">
-          <img
-            src={aboutData.imgURL}
-            alt="dev.png"
-            width={400}
-            height={400}
-            className="object-contain sm:object-cover"
-          />
+          <Lottie animationData={aboutAnimation} loop={true} />
         </div>
 
         <div className="flex flex-col gap-5 w-1/2 text-white p-5 sm:w-full sm:items-center ">
@@ -51,7 +48,7 @@ function About({ aboutData, introData }) {
           Here are the technologies I&apos;ve been working with:
         </h1>
         <div className="flex flex-wrap gap-10 mt-10">
-          {skills.map((skill, index) => (
+          {aboutData?.skills?.map((skill, index) => (
             <div
               key={index}
               className="border border-secondary text-white py-3 px-10 group relative"

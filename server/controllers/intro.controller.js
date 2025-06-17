@@ -49,35 +49,18 @@ export const updateIntro = async (req, res) => {
       });
     }
 
-    // Build the update object with only changed fields
-    const updatedData = {};
-    if (welcomeText && welcomeText !== intro.welcomeText)
-      updatedData.welcomeText = welcomeText;
-    if (firstName && firstName !== intro.firstName)
-      updatedData.firstName = firstName;
-    if (lastName && lastName !== intro.lastName)
-      updatedData.lastName = lastName;
-    if (caption && caption !== intro.caption) updatedData.caption = caption;
-    if (description && description !== intro.description)
-      updatedData.description = description;
+    intro.welcomeText = welcomeText || intro.welcomeText;
+    intro.firstName = firstName || intro.firstName;
+    intro.lastName = lastName || intro.lastName;
+    intro.caption = caption || intro.caption;
+    intro.description = description || intro.description;
 
-    if (Object.keys(updatedData).length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "No changes detected",
-      });
-    }
-
-    const updatedIntro = await Intro.findByIdAndUpdate(
-      intro._id,
-      { $set: updatedData },
-      { new: true }
-    );
+    const savedIntro = await intro.save();
 
     res.status(200).json({
       success: true,
       message: "Intro updated successfully",
-      data: updatedIntro,
+      data: savedIntro,
     });
   } catch (error) {
     console.error("Error updating intro:", error);

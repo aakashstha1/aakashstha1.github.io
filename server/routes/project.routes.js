@@ -7,7 +7,7 @@ import {
   updateProject,
 } from "../controllers/project.controller.js";
 import { authentication } from "../middleware/authentication.js";
-import upload from "../middleware/multer.js";
+import { upload } from "../middleware/multerAsCloudinary.js";
 
 const router = express.Router();
 

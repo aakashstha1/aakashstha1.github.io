@@ -1,107 +1,179 @@
-import  { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { Modal, Form, message } from "antd";
-import {
-  HideLoading,
-  ReloadData,
-  SetPortfolioData,
-  ShowLoading,
-} from "../../redux/rootSlice";
+import { useState, useEffect } from "react";
+import { Modal, Input, message } from "antd";
 import axios from "axios";
 
 function AdminProjects() {
-  const dispatch = useDispatch();
-  const { portfolioData } = useSelector((state) => state.root);
-  const { projects } = portfolioData;
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  // State for showing/hiding the modal
+  const [projects, setProjects] = useState([]);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
-
-  // State for tracking the selected project for editing
   const [selectedItemForEdit, setSelectedItemForEdit] = useState(null);
-
-  // State for determining whether to add or edit
   const [type, setType] = useState("add");
 
-  // Function to handle form submission (add/update)
-  const onFinish = async (values) => {
+  const [formData, setFormData] = useState({
+    title: "",
+    imgURL: null,
+    githubURL: "",
+    figmaURL: "",
+    websiteURL: "",
+  });
+
+  const fetchProjects = async () => {
     try {
-      const tempTechUsed = values.techUsed.split(",");
-      values.techUsed = tempTechUsed;
-      dispatch(ShowLoading());
-      let response;
-
-      // Update project if selected item exists, otherwise add new project
-      if (selectedItemForEdit) {
-        response = await axios.post(
-          "http://localhost:5000/api/portfolio/update-project",
-          {
-            ...values,
-            _id: selectedItemForEdit._id,
-          }
-        );
-      } else {
-        response = await axios.post(
-          "http://localhost:5000/api/portfolio/add-project",
-          values
-        );
-      }
-
-      dispatch(HideLoading());
-
-      // Handle the response from the server
-      if (response.data.success) {
-        dispatch(
-          SetPortfolioData({ ...portfolioData, projects: response.data.data })
-        );
-        message.success(response.data.message);
-        setShowAddEditModal(false);
-        setSelectedItemForEdit(null);
-        dispatch(HideLoading());
-        dispatch(ReloadData(true));
-      } else {
-        message.error(response.data.message);
+      const res = await axios.get(`${API_URL}/project/get`);
+      if (res.data.success) {
+        setProjects(res.data.data);
       }
     } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
+      console.log(error);
+      message.error("Failed to fetch projects");
     }
   };
 
-  // Function to delete a project
-  const onDelete = async (item) => {
+  const handleAddProject = async () => {
     try {
-      dispatch(ShowLoading());
-      const response = await axios.post(
-        "http://localhost:5000/api/portfolio/delete-project",
+      const payload = new FormData();
+      payload.append("title", formData.title);
+      payload.append("githubURL", formData.githubURL);
+      payload.append("figmaURL", formData.figmaURL);
+      payload.append("websiteURL", formData.websiteURL);
+      if (formData.imgURL) payload.append("imgURL", formData.imgURL);
+
+      const res = await axios.post(`${API_URL}/project/add`, payload, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (res.data.success) {
+        message.success(res.data.message);
+        resetForm();
+        fetchProjects();
+      } else {
+        message.error(res.data.message);
+      }
+    } catch (err) {
+      message.error(err.message || "Add failed");
+    }
+  };
+
+  const handleUpdateProject = async () => {
+    try {
+      const payload = new FormData();
+      payload.append("title", formData.title);
+      payload.append("githubURL", formData.githubURL);
+      payload.append("figmaURL", formData.figmaURL);
+      payload.append("websiteURL", formData.websiteURL);
+      if (formData.imgURL) payload.append("imgURL", formData.imgURL);
+
+      const res = await axios.put(
+        `${API_URL}/project/update/${selectedItemForEdit._id}`,
+        payload,
         {
-          _id: item._id,
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
-      dispatch(HideLoading());
+      console.log(res);
 
-      // Handle the response from the server
-      if (response.data.success) {
-        message.success(response.data.message);
-        dispatch(HideLoading());
-        dispatch(ReloadData(true));
+      if (res.data.success) {
+        message.success(res.data.message);
+        resetForm();
+        fetchProjects();
       } else {
-        message.error(response.data.message);
+        message.error(res.data.message);
       }
-    } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
+    } catch (err) {
+      message.error(err.message || "Update failed");
     }
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title.trim()) {
+      message.error("Title is required");
+      return;
+    }
+
+    if (type === "add" && !formData.imgURL) {
+      message.error("Image is required");
+      return;
+    }
+
+    if (type === "edit" && selectedItemForEdit) {
+      await handleUpdateProject();
+    } else {
+      await handleAddProject();
+    }
+  };
+
+  const resetForm = () => {
+    setShowAddEditModal(false);
+    setSelectedItemForEdit(null);
+    setFormData({
+      title: "",
+      imgURL: null,
+      githubURL: "",
+      figmaURL: "",
+      websiteURL: "",
+    });
+  };
+
+  const onDelete = (item) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this project?",
+      content: item.title,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          const res = await axios.delete(`${API_URL}/project/${item._id}`, {
+            withCredentials: true,
+          });
+          if (res.data.success) {
+            message.success(res.data.message);
+            fetchProjects();
+          } else {
+            message.error(res.data.message);
+          }
+        } catch (err) {
+          message.error(err.message || "Delete failed");
+        }
+      },
+    });
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    if (type === "edit" && selectedItemForEdit) {
+      setFormData({
+        title: selectedItemForEdit.title,
+        imgURL: selectedItemForEdit.imgURL,
+        githubURL: selectedItemForEdit.githubURL,
+        figmaURL: selectedItemForEdit.figmaURL,
+        websiteURL: selectedItemForEdit.websiteURL,
+      });
+    } else {
+      resetForm();
+    }
+  }, [selectedItemForEdit, type]);
 
   return (
     <div>
-      {/* Button to open the modal for adding a new project */}
+      {/* Add Button */}
       <div className="flex justify-end">
         <button
           className="bg-primary px-5 py-2 text-secondary mb-5 flex items-center gap-4"
           onClick={() => {
             setSelectedItemForEdit(null);
+            setType("add");
             setShowAddEditModal(true);
           }}
         >
@@ -109,11 +181,11 @@ function AdminProjects() {
         </button>
       </div>
 
-      {/* List of projects displayed in a grid */}
+      {/* Projects Grid */}
       <div className="grid grid-cols-3 gap-5">
-        {projects.map((project, index) => (
+        {projects.map((project) => (
           <div
-            key={index}
+            key={project._id}
             className="shadow border-2 p-5 flex flex-col gap-5 border-silver"
           >
             <h1 className="text-secondary text-xl font-bold flex justify-center">
@@ -122,31 +194,24 @@ function AdminProjects() {
             <hr />
             <img
               src={project.imgURL}
-              alt=""
+              alt={project.title}
               className="h-60 w-80 object-cover mx-auto"
             />
-            <h1>
-              <span className="text-primary font-semibold">Description :</span>{" "}
-              {project.description}
-            </h1>
 
-            {/* Edit and Delete buttons */}
             <div className="flex justify-end mt-5 gap-5">
               <button
                 className="bg-blue-500 text-white px-4 py-2"
                 onClick={() => {
                   setSelectedItemForEdit(project);
-                  setShowAddEditModal(true);
                   setType("edit");
+                  setShowAddEditModal(true);
                 }}
               >
                 Edit
               </button>
               <button
                 className="bg-red-500 text-white px-4 py-2"
-                onClick={() => {
-                  onDelete(project);
-                }}
+                onClick={() => onDelete(project)}
               >
                 Delete
               </button>
@@ -155,64 +220,80 @@ function AdminProjects() {
         ))}
       </div>
 
-      {/* Modal for adding/editing a project */}
+      {/* Modal */}
       {(type === "add" || selectedItemForEdit) && (
         <Modal
           open={showAddEditModal}
           title={selectedItemForEdit ? "Edit Project" : "Add Project"}
           footer={null}
-          onCancel={() => {
-            setShowAddEditModal(false);
-            setSelectedItemForEdit(null);
-          }}
+          onCancel={() => resetForm()}
         >
-          <Form
-            onFinish={onFinish}
-            layout="vertical"
-            initialValues={
-              selectedItemForEdit
-                ? {
-                    ...selectedItemForEdit,
-                    techUsed: selectedItemForEdit.techUsed.join(", "),
-                  }
-                : {}
-            }
-          >
-            <Form.Item name="title" label="Title">
-              <input placeholder="Title" />
-            </Form.Item>
-            <Form.Item name="imgURL" label="Image URL">
-              <input placeholder="Image URL" />
-            </Form.Item>
-            <Form.Item name="githubURL" label="Github URL">
-              <input placeholder="Github URL" />
-            </Form.Item>
-            <Form.Item name="figmaURL" label="Figma URL">
-              <input placeholder="Figma URL" />
-            </Form.Item>
-            <Form.Item name="websiteURL" label="Website URL">
-              <input placeholder="Website URL" />
-            </Form.Item>
-            <Form.Item name="techUsed" label="Technology Used">
-              <input placeholder="Technology Used" />
-            </Form.Item>
-            <Form.Item name="description" label="Description">
-              <textarea placeholder="Description" />
-            </Form.Item>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Input
+              placeholder="Title"
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Github URL"
+              value={formData.githubURL}
+              onChange={(e) =>
+                setFormData({ ...formData, githubURL: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Figma URL"
+              value={formData.figmaURL}
+              onChange={(e) =>
+                setFormData({ ...formData, figmaURL: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Website URL"
+              value={formData.websiteURL}
+              onChange={(e) =>
+                setFormData({ ...formData, websiteURL: e.target.value })
+              }
+            />
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setFormData({ ...formData, imgURL: e.target.files[0] })
+              }
+            />
+            {formData.imgURL && typeof formData.imgURL !== "string" ? (
+              <img
+                src={URL.createObjectURL(formData.imgURL)}
+                alt="Preview"
+                className="h-32 object-cover mt-2"
+              />
+            ) : selectedItemForEdit?.imgURL ? (
+              <img
+                src={selectedItemForEdit.imgURL}
+                alt="Preview"
+                className="h-32 object-cover mt-2"
+              />
+            ) : null}
 
-            {/* Close and Add/Update buttons */}
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-3 mt-3">
               <button
+                type="button"
                 className="border-primary text-primary px-5 py-2"
                 onClick={() => setShowAddEditModal(false)}
               >
                 CLOSE
               </button>
-              <button className="bg-primary text-secondary px-5 py-2">
+              <button
+                className="bg-primary text-secondary px-5 py-2"
+                type="submit"
+              >
                 {selectedItemForEdit ? "Update" : "Add"}
               </button>
             </div>
-          </Form>
+          </form>
         </Modal>
       )}
     </div>

@@ -89,27 +89,12 @@ export const updateExperience = async (req, res) => {
       });
     }
 
-    // Update fields only if they're different
-    const updatedFields = {};
-    if (title && title !== experience.title) updatedFields.title = title;
-    if (period && period !== experience.period) updatedFields.period = period;
-    if (company && company !== experience.company)
-      updatedFields.company = company;
-    if (description && description !== experience.description)
-      updatedFields.description = description;
+    experience.title = title || experience.title;
+    experience.period = period || experience.period;
+    experience.company = company || experience.company;
+    experience.description = description || experience.description;
 
-    if (Object.keys(updatedFields).length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "No changes detected",
-      });
-    }
-
-    const updatedExperience = await Experience.findByIdAndUpdate(
-      experience._id,
-      { $set: updatedFields },
-      { new: true }
-    );
+    const updatedExperience = await experience.save();
 
     res.status(200).json({
       success: true,

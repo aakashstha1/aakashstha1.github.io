@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from "react";
-import Navbar from "../../components/Navbar";
+import { useState, useEffect } from "react";
 import { Tabs } from "antd";
 import AdminIntro from "./AdminIntro";
+import { useAuth } from "../../context/AuthContext";
 import AdminAbout from "./AdminAbout";
-import { useSelector } from "react-redux";
 import AdminExperiences from "./AdminExperiences";
 import AdminProjects from "./AdminProjects";
-import AdminContact from "./AdminContact";
+// import AdminContact from "./AdminContact";
 import Links from "./Links";
 
-function Admin() {
-  const { portfolioData } = useSelector((state) => state.root);
-
+function Dashboard() {
   // Track the active tab key using useState
   const [activeTabKey, setActiveTabKey] = useState("1");
-
+  const { user } = useAuth();
   // Load the saved active tab key on component mount
   useEffect(() => {
     const savedTabKey = localStorage.getItem("activeTabKey");
@@ -28,12 +25,6 @@ function Admin() {
     setActiveTabKey(key);
     localStorage.setItem("activeTabKey", key);
   };
-
-  useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "./admin-login";
-    }
-  }, []);
 
   const items = [
     {
@@ -58,11 +49,6 @@ function Admin() {
     },
     {
       key: "5",
-      label: "Contact",
-      children: <AdminContact />,
-    },
-    {
-      key: "6",
       label: "Links",
       children: <Links />,
     },
@@ -76,17 +62,9 @@ function Admin() {
         </h1>
       </div>
       <div className="absolute top-8 right-10 cursor-pointer">
-        <h1
-          className="text-secondary"
-          onClick={() => {
-            localStorage.removeItem("token");
-            window.location.href = "/admin-login";
-          }}
-        >
-          Logout &nbsp; <i className="fa-solid fa-right-from-bracket"></i>
-        </h1>
+        <h1>setting </h1>
       </div>
-      {portfolioData && (
+      {user && (
         <div className="p-5">
           <Tabs activeKey={activeTabKey} items={items} onChange={onChange} />
         </div>
@@ -95,4 +73,4 @@ function Admin() {
   );
 }
 
-export default Admin;
+export default Dashboard;

@@ -1,44 +1,112 @@
 import SectionTitle from "./SectionTitle";
-import PropTypes from "prop-types";
+import { Button, Input, message } from "antd";
+import Lottie from "lottie-react";
+import contactAnimation from "../assets/lottie/contactLottie.json";
+import { useState } from "react";
+import axios from "axios";
+import { MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
 
-Contact.propTypes = {
-  contactData: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
-    mobile: PropTypes.string.isRequired,
-    address: PropTypes.string.isRequired,
-    education: PropTypes.string.isRequired,
-  }).isRequired,
-};
+const { TextArea } = Input;
 
-function Contact({ contactData }) {
+function Contact() {
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  const [inputs, setInputs] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setInputs({ ...inputs, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async () => {
+    if (!inputs.name || !inputs.email || !inputs.message) {
+      message.error("Please fill in all required fields.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post(`${API_URL}/sendMsg`, inputs);
+      message.success("Message sent successfully!");
+      setInputs({ name: "", email: "", phone: "", message: "" });
+    } catch (error) {
+      console.error("Submission failed:", error);
+      message.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div id="contact">
       <SectionTitle title="Contact" />
-      <div className="flex sm:flex-col items-center justify-between sm:gap-10">
-        <div className="flex flex-col gap-1">
-          <p className="text-secondary">{`{`}</p>
-          {Object.keys(contactData).map(
-            (key) =>
-              key !== "_id" && (
-                <p key={key} className="mb-4 ml-5">
-                  <span className="text-secondary">{key}:</span>
-                  <span className="text-secondary ml-2">
-                    {contactData[key]}
-                  </span>
-                </p>
-              )
-          )}
-          <p className="text-secondary">{`}`}</p>
-        </div>
-        <div>
-          <img
-            src="../src/assets/images/contact.png"
-            alt="Contact"
-            width={400}
-            height={400}
-            className="object-cover"
+      <div className="flex items-center w-full gap-6">
+        {/* Lottie Animation */}
+        <div className="w-full md:w-1/2 flex justify-center">
+          <Lottie
+            animationData={contactAnimation}
+            loop={true}
           />
+        </div>
+
+        {/* Contact Form */}
+        <div className="w-full md:w-1/2 flex justify-center">
+          <div className="w-full space-y-4">
+            <Input
+              type="text"
+              name="name"
+              placeholder="Your Name"
+              value={inputs.name}
+              onChange={handleChange}
+              prefix={<UserOutlined />}
+              required
+            />
+
+            <Input
+              type="email"
+              name="email"
+              placeholder="Your Email"
+              value={inputs.email}
+              onChange={handleChange}
+              prefix={<MailOutlined />}
+              required
+            />
+
+            <Input
+              type="number"
+              name="phone"
+              placeholder="Phone Number"
+              value={inputs.phone}
+              onChange={handleChange}
+              prefix={<PhoneOutlined />}
+            />
+
+            <TextArea
+              name="message"
+              placeholder="Your Message"
+              value={inputs.message}
+              onChange={handleChange}
+              rows={4}
+              required
+            />
+
+            <div className="flex justify-end">
+              <Button
+                className="w-full md:w-28"
+                type="primary"
+                loading={loading}
+                onClick={handleSubmit}
+              >
+                Send
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

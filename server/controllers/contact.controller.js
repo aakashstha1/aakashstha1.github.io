@@ -1,86 +1,120 @@
-import Contact from "../models/contact.model.js";
+// import Contact from "../models/contact.model.js";
 
-// --------------------------------------------Get Contact--------------------------------------------------
+// // --------------------------------------------Get Contact--------------------------------------------------
 
-export const getContact = async (req, res) => {
-  try {
-    const contacts = await Contact.findOne();
+// export const getContact = async (req, res) => {
+//   try {
+//     const contacts = await Contact.findOne();
 
-    if (!contacts) {
-      return res.status(404).json({
-        success: false,
-        message: "Contact section not found",
-      });
-    }
-    res.status(200).json({ success: true, data: contacts });
-  } catch (error) {
-    console.log(error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "Filed to fetch contact!" });
+//     if (!contacts) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Contact section not found",
+//       });
+//     }
+//     res.status(200).json({ success: true, data: contacts });
+//   } catch (error) {
+//     console.log(error.message);
+//     res
+//       .status(500)
+//       .json({ success: false, message: "Filed to fetch contact!" });
+//   }
+// };
+
+// // --------------------------------------------Update Contact--------------------------------------------------
+
+// export const updateContact = async (req, res) => {
+//   try {
+//     const userId = req.userId;
+//     const { name, email, address, mobile, education } = req.body;
+
+//     let contact = await Contact.findOne({ user: userId });
+
+//     if (!contact) {
+//       const newContact = new Contact({
+//         name,
+//         email,
+//         address,
+//         mobile,
+//         education,
+//         user: userId,
+//       });
+
+//       const savedContact = await newContact.save();
+
+//       return res.status(201).json({
+//         success: true,
+//         message: "Contact created successfully",
+//         data: savedContact,
+//       });
+//     }
+
+//     // Build the update object with only changed fields
+//     const updatedData = {};
+//     if (name && name !== contact.name) updatedData.name = name;
+//     if (email && email !== contact.email) updatedData.email = email;
+//     if (address && address !== contact.address) updatedData.address = address;
+//     if (mobile && mobile !== contact.mobile) updatedData.mobile = mobile;
+//     if (education && education !== contact.education)
+//       updatedData.education = education;
+
+//     if (Object.keys(updatedData).length === 0) {
+//       return res.status(200).json({
+//         success: false,
+//         message: "No changes detected",
+//       });
+//     }
+
+//     const updatedContact = await Contact.findByIdAndUpdate(
+//       contact._id,
+//       { $set: updatedData },
+//       { new: true }
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Contact updated successfully",
+//       data: updatedContact,
+//     });
+//   } catch (error) {
+//     console.error("Error updating contact:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Something went wrong",
+//     });
+//   }
+// };
+import { submitMessage } from "../nodemailer/emails.js";
+
+export const sendMsg = async (req, res) => {
+  const { name, email, phone, message } = req.body;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!name || !email || !message) {
+    return res.status(400).json({
+      success: false,
+      message: "Name, email, and message are required.",
+    });
   }
-};
 
-// --------------------------------------------Update Contact--------------------------------------------------
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid email address.",
+    });
+  }
 
-export const updateContact = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { name, email, address, mobile, education } = req.body;
-
-    let contact = await Contact.findOne({ user: userId });
-
-    if (!contact) {
-      const newContact = new Contact({
-        name,
-        email,
-        address,
-        mobile,
-        education,
-        user: userId,
-      });
-
-      const savedContact = await newContact.save();
-
-      return res.status(201).json({
-        success: true,
-        message: "Contact created successfully",
-        data: savedContact,
-      });
-    }
-
-    // Build the update object with only changed fields
-    const updatedData = {};
-    if (name && name !== contact.name) updatedData.name = name;
-    if (email && email !== contact.email) updatedData.email = email;
-    if (address && address !== contact.address) updatedData.address = address;
-    if (mobile && mobile !== contact.mobile) updatedData.mobile = mobile;
-    if (education && education !== contact.education)
-      updatedData.education = education;
-
-    if (Object.keys(updatedData).length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "No changes detected",
-      });
-    }
-
-    const updatedContact = await Contact.findByIdAndUpdate(
-      contact._id,
-      { $set: updatedData },
-      { new: true }
-    );
-
-    res.status(200).json({
+    await submitMessage(name, email, phone, message);
+    return res.status(200).json({
       success: true,
-      message: "Contact updated successfully",
-      data: updatedContact,
+      message: "Message sent successfully!",
     });
   } catch (error) {
-    console.error("Error updating contact:", error);
-    res.status(500).json({
+    console.error("Error sending email:", error);
+    return res.status(500).json({
       success: false,
-      message: "Something went wrong",
+      message: "Failed to send message. Please try again later.",
     });
   }
 };

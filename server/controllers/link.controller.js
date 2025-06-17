@@ -55,33 +55,18 @@ export const updateLinks = async (req, res) => {
       });
     }
 
-    // Prepare update only if changed
-    const updatedData = {};
-    if (fbURL && fbURL !== link.fbURL) updatedData.fbURL = fbURL;
-    if (email && email !== link.email) updatedData.email = email;
-    if (instaURL && instaURL !== link.instaURL) updatedData.instaURL = instaURL;
-    if (linkedinURL && linkedinURL !== link.linkedinURL)
-      updatedData.linkedinURL = linkedinURL;
-    if (githubURL && githubURL !== link.githubURL)
-      updatedData.githubURL = githubURL;
+    link.fbURL = fbURL || link.fbURL;
+    link.email = email || link.email;
+    link.instaURL = instaURL || link.instaURL;
+    link.linkedinURL = linkedinURL || link.linkedinURL;
+    link.githubURL = githubURL || link.githubURL;
 
-    if (Object.keys(updatedData).length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "No changes detected",
-      });
-    }
-
-    const updatedLink = await Link.findByIdAndUpdate(
-      link._id,
-      { $set: updatedData },
-      { new: true }
-    );
+    const savedLink = await about.save();
 
     res.status(200).json({
       success: true,
       message: "Links updated successfully",
-      data: updatedLink,
+      data: savedLink,
     });
   } catch (error) {
     console.error("Error updating links:", error.message);

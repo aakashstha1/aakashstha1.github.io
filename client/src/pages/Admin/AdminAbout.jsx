@@ -1,106 +1,131 @@
-import React from "react";
-import { Form } from "antd";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  ShowLoading,
-  HideLoading,
-  SetPortfolioData,
-} from "../../redux/rootSlice";
+import { Input, message } from "antd";
 import axios from "axios";
-import { message } from "antd";
+import { useEffect, useState } from "react";
+import { LoadingOutlined } from "@ant-design/icons";
+
+const { TextArea } = Input;
 
 function AdminAbout() {
-  const dispatch = useDispatch();
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  const { portfolioData } = useSelector((state) => state.root);
-  const onFinish = async (values) => {
-    try {
-      const tempSkills = values.skills.split(",");
-      values.skills = tempSkills;
-      dispatch(ShowLoading());
-      const response = await axios.post(
-        "http://localhost:5000/api/portfolio/update-about",
-        {
-          ...values,
-          _id: portfolioData.about._id,
-        }
-      );
-      dispatch(HideLoading());
-      if (response.data.success) {
-        dispatch(
-          SetPortfolioData({ ...portfolioData, about: response.data.data })
-        );
-        message.success(response.data.message);
-      } else {
-        message.error(response.data.message);
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    description1: "",
+    description2: "",
+    skills: "",
+  });
+
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/get-about`, {
+          withCredentials: true,
+        });
+
+        const data = res.data.data;
+        setFormData({
+          description1: data.description1 || "",
+          description2: data.description2 || "",
+          skills: Array.isArray(data.skills) ? data.skills.join(", ") : "",
+        });
+      } catch (error) {
+        console.error(error);
+        message.error("Failed to load about data");
       }
+    };
+
+    fetchAbout();
+  }, [API_URL]);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const payload = {
+        ...formData,
+        skills: formData.skills
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(Boolean),
+      };
+
+      const res = await axios.put(`${API_URL}/update-about`, payload, {
+        withCredentials: true,
+      });
+
+      message.success(res.data.message);
     } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
+      console.error(error);
+      message.error(error.response?.data?.message || "Update failed");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
-    <div>
-      <Form
-        onFinish={onFinish}
-        layout="vertical"
-        initialValues={{
-          ...portfolioData.about,
-          skills: portfolioData.about.skills.join(", "),
-        }}
-      >
-        <Form.Item name="imgURL" label="Image Url">
-          <input placeholder="Image URL" required />
-        </Form.Item>
-        <Form.Item
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div>
+        <label>
+          Description 1 <span className="text-gray-400">(max 500 chars)</span>
+        </label>
+        <TextArea
           name="description1"
-          label={
-            <span>
-              Description1{" "}
-              <span className="text-gray-400">(max 500 characters)</span>
-            </span>
-          }
-          rules={[
-            {
-              max: 500, // Maximum 500 characters
-              message: "Description1 cannot exceed 500 characters.",
-            },
-          ]}
-        >
-          <textarea placeholder="Description1" maxLength={500} required />
-        </Form.Item>
+          maxLength={500}
+          placeholder="Description 1"
+          value={formData.description1}
+          onChange={handleChange}
+          required
+          rows={3}
+        />
+      </div>
 
-        <Form.Item
+      <div>
+        <label>
+          Description 2 <span className="text-gray-400">(max 500 chars)</span>
+        </label>
+        <TextArea
           name="description2"
-          label={
-            <span>
-              Description2{" "}
-              <span className="text-gray-400">(max 500 characters)</span>
-            </span>
-          }
-          rules={[
-            {
-              max: 500, // Maximum 500 characters
-              message: "Description2 cannot exceed 500 characters.",
-            },
-          ]}
-        >
-          <textarea placeholder="Description2" maxLength={500} required />
-        </Form.Item>
+          maxLength={500}
+          placeholder="Description 2"
+          value={formData.description2}
+          onChange={handleChange}
+          required
+          rows={3}
+        />
+      </div>
 
-        <Form.Item name="skills" label="Skills">
-          <textarea placeholder="Skills" required />
-        </Form.Item>
-        <div className=" flex justify-end w-full">
-          <button
-            className="px-10 py-2 bg-primary text-secondary"
-            type="submit"
-          >
-            SAVE
-          </button>
-        </div>
-      </Form>
-    </div>
+      <div>
+        <label>
+          Skills <span className="text-gray-400">(comma separated)</span>
+        </label>
+        <TextArea
+          name="skills"
+          placeholder="e.g., React, Node.js, MongoDB"
+          value={formData.skills}
+          onChange={handleChange}
+          required
+          rows={2}
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          className="px-10 py-2 bg-primary text-white rounded"
+          disabled={loading}
+        >
+          {loading ? <LoadingOutlined /> : "SAVE"}
+        </button>
+      </div>
+    </form>
   );
 }
 
