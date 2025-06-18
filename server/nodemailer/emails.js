@@ -5,11 +5,11 @@ import {
 } from "./emailTemplates.js";
 import { transporter, sender } from "./nodemailer.config.js";
 
-export const sendPasswordResetEmail = async (resetURL) => {
+export const sendPasswordResetEmail = async (email, resetURL) => {
   try {
     await transporter.sendMail({
       from: sender,
-      to: "aakash.cerestha90@gmail.com",
+      to: email,
       subject: "Reset your password",
       html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
     });
@@ -40,7 +40,7 @@ export const submitMessage = async (name, email, phone, message) => {
     await transporter.sendMail({
       from: sender,
       to: "aakash.078@godawari.edu.np",
-        replyTo: email,
+      replyTo: email,
       subject: `New contact form message from ${name}`,
       html: CONTACT_FORM_SUBMISSION_TEMPLATE.replace("{name}", name)
         .replace("{email}", email)

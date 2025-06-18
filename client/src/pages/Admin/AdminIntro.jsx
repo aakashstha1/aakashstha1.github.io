@@ -15,6 +15,7 @@ function AdminIntro() {
     lastName: "",
     caption: "",
     description: "",
+    resume: "",
   });
 
   useEffect(() => {
@@ -106,6 +107,28 @@ function AdminIntro() {
           required
           rows={4}
         />
+      </div>
+      <div>
+        <label>Resume URL</label>
+        <Input
+          name="resume"
+          placeholder="Resume URL"
+          value={formData.resume}
+          onChange={handleChange}
+          required
+        />
+        {formData.resume && (
+          <>
+            <a
+              href={formData.resume}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline text-sm mt-2 block"
+            >
+              {decodeURIComponent(formData.resume.split("/").pop())}
+            </a>
+          </>
+        )}
       </div>
 
       <div className="flex justify-end">

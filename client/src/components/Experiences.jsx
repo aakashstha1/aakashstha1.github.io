@@ -11,7 +11,6 @@ function Experiences() {
     try {
       const res = await axios.get(`${API_URL}/exp/get`);
       setExperienceData(res?.data?.data || []);
-      console.log(res?.data?.data);
     } catch (error) {
       console.log(error);
     }
@@ -22,7 +21,7 @@ function Experiences() {
   }, []);
 
   return (
-    <div>
+    <div id="experience">
       <SectionTitle title="Experience" />
       <div className="flex py-10 gap-20 sm:flex-col">
         {/* Left Section - Experience Periods */}

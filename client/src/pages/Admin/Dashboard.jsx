@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Tabs } from "antd";
+import { Tabs, Dropdown, Menu } from "antd";
 import AdminIntro from "./AdminIntro";
 import { useAuth } from "../../context/AuthContext";
 import AdminAbout from "./AdminAbout";
@@ -7,12 +7,15 @@ import AdminExperiences from "./AdminExperiences";
 import AdminProjects from "./AdminProjects";
 // import AdminContact from "./AdminContact";
 import Links from "./Links";
+import { SettingOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import ChangePassword from "../Auth/ChangePassword";
 
 function Dashboard() {
-  // Track the active tab key using useState
   const [activeTabKey, setActiveTabKey] = useState("1");
-  const { user } = useAuth();
-  // Load the saved active tab key on component mount
+  const { user, logout } = useAuth();
+  const [changePasswordVisible, setChangePasswordVisible] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     const savedTabKey = localStorage.getItem("activeTabKey");
     if (savedTabKey) {
@@ -24,6 +27,15 @@ function Dashboard() {
   const onChange = (key) => {
     setActiveTabKey(key);
     localStorage.setItem("activeTabKey", key);
+  };
+
+  const handelLogout = async () => {
+    const res = await logout();
+    if (res.success) {
+      navigate("/admin/login");
+    } else {
+      console.error("Logout failed:", res.error);
+    }
   };
 
   const items = [
@@ -54,6 +66,23 @@ function Dashboard() {
     },
   ];
 
+  // const navigate = useNavigate();
+
+  const handleMenuClick = ({ key }) => {
+    if (key === "logout") {
+      handelLogout();
+    } else if (key === "changePassword") {
+      setChangePasswordVisible(true);
+    }
+  };
+
+  const menu = (
+    <Menu onClick={handleMenuClick}>
+      <Menu.Item key="changePassword">Change Password</Menu.Item>
+      <Menu.Item key="logout">Logout</Menu.Item>
+    </Menu>
+  );
+
   return (
     <>
       <div className="bg-primary p-1">
@@ -61,14 +90,20 @@ function Dashboard() {
           Admin Dashboard
         </h1>
       </div>
-      <div className="absolute top-8 right-10 cursor-pointer">
-        <h1>setting </h1>
-      </div>
+      <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+        <div className="absolute top-8 right-10 cursor-pointer">
+          <SettingOutlined className="text-white" />
+        </div>
+      </Dropdown>
       {user && (
         <div className="p-5">
           <Tabs activeKey={activeTabKey} items={items} onChange={onChange} />
         </div>
       )}
+      <ChangePassword
+        open={changePasswordVisible}
+        onClose={() => setChangePasswordVisible(false)}
+      />
     </>
   );
 }

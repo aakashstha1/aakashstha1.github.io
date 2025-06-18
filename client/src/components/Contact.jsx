@@ -1,10 +1,10 @@
 import SectionTitle from "./SectionTitle";
 import { Button, Input, message } from "antd";
 import Lottie from "lottie-react";
-import contactAnimation from "../assets/lottie/contactLottie.json";
+import contact from "../assets/lottie/contact.json";
 import { useState } from "react";
 import axios from "axios";
-import { MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
+// import { MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
 
 const { TextArea } = Input;
 
@@ -48,10 +48,11 @@ function Contact() {
       <SectionTitle title="Contact" />
       <div className="flex items-center w-full gap-6">
         {/* Lottie Animation */}
-        <div className="w-full md:w-1/2 flex justify-center">
+        <div className="w-full md:w-1/2 flex justify-center sm:hidden">
           <Lottie
-            animationData={contactAnimation}
+            animationData={contact}
             loop={true}
+            style={{ width: 400, height: 400 }}
           />
         </div>
 
@@ -64,7 +65,7 @@ function Contact() {
               placeholder="Your Name"
               value={inputs.name}
               onChange={handleChange}
-              prefix={<UserOutlined />}
+              className="placeholder-gray-500"
               required
             />
 
@@ -74,7 +75,7 @@ function Contact() {
               placeholder="Your Email"
               value={inputs.email}
               onChange={handleChange}
-              prefix={<MailOutlined />}
+              className="placeholder-gray-500"
               required
             />
 
@@ -84,7 +85,7 @@ function Contact() {
               placeholder="Phone Number"
               value={inputs.phone}
               onChange={handleChange}
-              prefix={<PhoneOutlined />}
+              className="placeholder-gray-500"
             />
 
             <TextArea
@@ -93,6 +94,7 @@ function Contact() {
               value={inputs.message}
               onChange={handleChange}
               rows={4}
+              className="placeholder-gray-500"
               required
             />
 

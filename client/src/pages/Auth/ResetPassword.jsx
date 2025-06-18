@@ -1,35 +1,50 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { Input, Button } from "antd";
-import { EyeTwoTone, EyeInvisibleOutlined } from "@ant-design/icons";
+import { useNavigate, useParams } from "react-router-dom";
+import { Input, Button, message } from "antd";
+import {
+  EyeTwoTone,
+  EyeInvisibleOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
+import { useEffect } from "react";
+import axios from "axios";
 
-function Login() {
+function ResetPassword() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const API_URL = import.meta.env.VITE_API_URL;
+  const { token } = useParams();
 
-  const [inputs, setInputs] = useState({
-    username: "",
-    password: "",
-  });
-
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setInputs((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  useEffect(() => {
+    if (user) {
+      navigate("/admin/dashboard");
+    }
+  }, [navigate, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await login(inputs);
-    if (res.success) {
-      navigate("/admin/dashboard");
-    } else {
-      console.error("Login failed:", res.error);
+    try {
+      setLoading(true);
+      const res = await axios.post(
+        `${API_URL}/admin/reset-password/${token}`,
+        { password },
+        {
+          withCredentials: true,
+        }
+      );
+      message.success(res?.data.message || "Password Chaged");
+      navigate("/admin/login");
+    } catch (error) {
+      console.log(error);
+
+      message.error(error?.response?.data.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,25 +55,16 @@ function Login() {
         className="w-96 flex gap-4 flex-col shadow-lg border border-secondary p-6 bg-primary rounded"
       >
         <h1 className="flex justify-center text-xl font-semibold text-tubeLight-effect py-2">
-          Admin Login
+          Reset Password
         </h1>
-
-        <Input
-          name="username"
-          placeholder="Username"
-          value={inputs.username}
-          onChange={handleChange}
-          required
-          className="placeholder-gray-500"
-        />
 
         <div className="relative">
           <Input
             name="password"
             type={showPassword ? "text" : "password"}
             placeholder="Password"
-            value={inputs.password}
-            onChange={handleChange}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
             className="placeholder-gray-500 pr-10"
           />
@@ -70,20 +76,16 @@ function Login() {
           </div>
         </div>
 
-        <div className="flex justify-end text-sm text-secondary underline cursor-pointer">
-          <span>Forgot Password?</span>
-        </div>
-
         <Button
           type="primary"
           htmlType="submit"
           className="bg-secondary text-white font-semibold"
         >
-          Login
+          {loading ? <LoadingOutlined /> : "Change"}
         </Button>
       </form>
     </div>
   );
 }
 
-export default Login;
+export default ResetPassword;

@@ -53,43 +53,51 @@ export const getSingleProject = async (req, res) => {
 export const addProject = async (req, res) => {
   try {
     const userId = req.userId;
-
     const { title, githubURL, figmaURL, websiteURL } = req.body;
 
-    if (!req.file || !req.file.mimetype.startsWith("image/")) {
+    // Check for uploaded file
+    if (!req.file) {
+      console.error("Image upload missing in request.");
       return res.status(400).json({
         success: false,
-        message: "Only image files are allowed",
+        message: "Image file is required.",
       });
     }
 
-    const imgURL = req.file.path;
-    console.log(req.file);
+    const file = req.file;
 
-    // Validate user existence
+    if (!file.mimetype.startsWith("image/")) {
+      return res.status(400).json({
+        success: false,
+        message: "Only image files are allowed.",
+      });
+    }
+
+    // Check user exists
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found.",
       });
     }
 
-    // Ensure techUsed is always an array of strings
-    // let techArray = [];
-    // if (Array.isArray(techUsed)) {
-    //   techArray = techUsed;
-    // } else if (typeof techUsed === "string") {
-    //   techArray = techUsed
-    //     .split(",")
-    //     .map((tech) => tech.trim())
-    //     .filter(Boolean);
-    // }
+    // Validate cloudinary fields
+    const imageURL = file.path || file.secure_url;
+    const publicId = file.filename || file.public_id;
+
+    if (!imageURL || !publicId) {
+      console.error("Cloudinary upload failed:", file);
+      return res.status(500).json({
+        success: false,
+        message: "Image upload failed.",
+      });
+    }
 
     const newProject = new Project({
       title,
-      imgURL: req.file.secure_url,
-      cloudinaryId: req.file.public_id,
+      imgURL: imageURL,
+      cloudinaryId: publicId,
       githubURL,
       figmaURL,
       websiteURL,
@@ -100,14 +108,14 @@ export const addProject = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Project added successfully",
+      message: "Project added successfully.",
       data: savedProject,
     });
   } catch (error) {
-    console.error("Error adding project:", error.message);
+    console.error("Error in addProject:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to add project",
+      message: "Internal server error.",
     });
   }
 };
@@ -118,10 +126,7 @@ export const updateProject = async (req, res) => {
   try {
     const userId = req.userId;
     const { projectId } = req.params;
-
     const { title, githubURL, figmaURL, websiteURL } = req.body;
-
-    const imgURL = req.file ? req.file.path : req.body.imgURL;
 
     const project = await Project.findOne({ _id: projectId, user: userId });
 
@@ -132,11 +137,21 @@ export const updateProject = async (req, res) => {
       });
     }
 
+    if (req.file) {
+      if (!req.file.mimetype.startsWith("image/")) {
+        return res.status(400).json({
+          success: false,
+          message: "Only image files are allowed",
+        });
+      }
+      project.imgURL = req.file.path || req.file.secure_url;
+      project.cloudinaryId = req.file.filename || req.file.public_id;
+    }
+
     project.title = title || project.title;
     project.githubURL = githubURL || project.githubURL;
     project.figmaURL = figmaURL || project.figmaURL;
     project.websiteURL = websiteURL || project.websiteURL;
-    if (imgURL) project.imgURL = imgURL;
 
     const updatedProject = await project.save();
 

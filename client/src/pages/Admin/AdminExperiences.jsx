@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Modal, Input, message } from "antd";
 import axios from "axios";
+import { LoadingOutlined } from "@ant-design/icons";
 
 function AdminExperiences() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState(null);
   const [type, setType] = useState("add");
@@ -30,6 +32,7 @@ function AdminExperiences() {
 
   const handleAddExperience = async () => {
     try {
+      setLoading(true);
       const url = `${API_URL}/exp/add`;
       const res = await axios.post(url, formData, { withCredentials: true });
 
@@ -42,11 +45,15 @@ function AdminExperiences() {
       }
     } catch (err) {
       message.error(err.message || "Add failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdateExperience = async () => {
     try {
+      setLoading(true);
+
       const url = `${API_URL}/exp/update/${selectedItemForEdit._id}`;
       const res = await axios.put(url, formData, { withCredentials: true });
 
@@ -59,6 +66,8 @@ function AdminExperiences() {
       }
     } catch (err) {
       message.error(err.message || "Update failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -253,10 +262,17 @@ function AdminExperiences() {
                 CLOSE
               </button>
               <button
+                disabled={loading}
                 className="bg-primary text-secondary px-5 py-2"
                 type="submit"
               >
-                {selectedItemForEdit ? "Update" : "Add"}
+                {loading ? (
+                  <LoadingOutlined />
+                ) : selectedItemForEdit ? (
+                  "Update"
+                ) : (
+                  "Add"
+                )}
               </button>
             </div>
           </form>

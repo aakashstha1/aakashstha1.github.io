@@ -24,9 +24,9 @@ export const getIntro = async (req, res) => {
 export const updateIntro = async (req, res) => {
   try {
     const userId = req.userId;
-    const { welcomeText, firstName, lastName, caption, description } = req.body;
+    const { welcomeText, firstName, lastName, caption, description, resume } =
+      req.body;
 
-    // Try to find an existing intro
     let intro = await Intro.findOne({ user: userId });
 
     // If not found, create new one
@@ -37,6 +37,7 @@ export const updateIntro = async (req, res) => {
         lastName,
         caption,
         description,
+        resume,
         user: userId,
       });
 
@@ -54,6 +55,7 @@ export const updateIntro = async (req, res) => {
     intro.lastName = lastName || intro.lastName;
     intro.caption = caption || intro.caption;
     intro.description = description || intro.description;
+    intro.resume = resume || intro.resume;
 
     const savedIntro = await intro.save();
 

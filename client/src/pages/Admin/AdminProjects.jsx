@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import { Modal, Input, message } from "antd";
 import axios from "axios";
+import { useRef } from "react";
+import { LoadingOutlined } from "@ant-design/icons";
 
 function AdminProjects() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [projects, setProjects] = useState([]);
   const [showAddEditModal, setShowAddEditModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState(null);
   const [type, setType] = useState("add");
-
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     title: "",
     imgURL: null,
@@ -32,6 +35,7 @@ function AdminProjects() {
 
   const handleAddProject = async () => {
     try {
+      setLoading(true);
       const payload = new FormData();
       payload.append("title", formData.title);
       payload.append("githubURL", formData.githubURL);
@@ -55,11 +59,14 @@ function AdminProjects() {
       }
     } catch (err) {
       message.error(err.message || "Add failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdateProject = async () => {
     try {
+      setLoading(true);
       const payload = new FormData();
       payload.append("title", formData.title);
       payload.append("githubURL", formData.githubURL);
@@ -77,7 +84,6 @@ function AdminProjects() {
           },
         }
       );
-      console.log(res);
 
       if (res.data.success) {
         message.success(res.data.message);
@@ -88,6 +94,8 @@ function AdminProjects() {
       }
     } catch (err) {
       message.error(err.message || "Update failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -120,6 +128,10 @@ function AdminProjects() {
       figmaURL: "",
       websiteURL: "",
     });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   };
 
   const onDelete = (item) => {
@@ -182,7 +194,7 @@ function AdminProjects() {
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-4 gap-5">
         {projects.map((project) => (
           <div
             key={project._id}
@@ -260,37 +272,32 @@ function AdminProjects() {
             <Input
               type="file"
               accept="image/*"
+              ref={fileInputRef}
               onChange={(e) =>
                 setFormData({ ...formData, imgURL: e.target.files[0] })
               }
             />
-            {formData.imgURL && typeof formData.imgURL !== "string" ? (
-              <img
-                src={URL.createObjectURL(formData.imgURL)}
-                alt="Preview"
-                className="h-32 object-cover mt-2"
-              />
-            ) : selectedItemForEdit?.imgURL ? (
-              <img
-                src={selectedItemForEdit.imgURL}
-                alt="Preview"
-                className="h-32 object-cover mt-2"
-              />
-            ) : null}
 
             <div className="flex justify-end gap-3 mt-3">
               <button
                 type="button"
                 className="border-primary text-primary px-5 py-2"
-                onClick={() => setShowAddEditModal(false)}
+                onClick={() => resetForm()}
               >
                 CLOSE
               </button>
               <button
+                disabled={loading}
                 className="bg-primary text-secondary px-5 py-2"
                 type="submit"
               >
-                {selectedItemForEdit ? "Update" : "Add"}
+                {loading ? (
+                  <LoadingOutlined />
+                ) : selectedItemForEdit ? (
+                  "Update"
+                ) : (
+                  "Add"
+                )}
               </button>
             </div>
           </form>

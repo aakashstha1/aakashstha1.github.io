@@ -1,5 +1,5 @@
 import SectionTitle from "./SectionTitle";
-import Button from "./Button";
+// import Button from "./Button";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Lottie from "lottie-react";
@@ -26,20 +26,20 @@ function About() {
     <div id="about">
       <SectionTitle title="About" />
       <div className="flex w-full items-center sm:flex-col ">
-        <div className="h-[60vh] w-1/2 flex sm:w-full">
+        <div className="h-[60vh] w-1/2 flex sm:w-full sm:h-full">
           <Lottie animationData={aboutAnimation} loop={true} />
         </div>
 
         <div className="flex flex-col gap-5 w-1/2 text-white p-5 sm:w-full sm:items-center ">
           <p className="text-justify">{aboutData.description1}</p>
           <p className="text-justify ">{aboutData.description2}</p>
-          <Button
+          {/* <Button
             type="primary"
             className="w-52 m-2 flex justify-center"
             // href={aboutData.resume} // Ensure 'resume' is a valid file URL or path
             // download={`${introData.firstName}_${introData.lastName}_Resume.pdf`}
             text="Download CV"
-          />
+          /> */}
         </div>
       </div>
 

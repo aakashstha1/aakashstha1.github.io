@@ -118,7 +118,7 @@ export const updatePassword = async (req, res) => {
     const oldPasswordMatch = await bcryptjs.compare(oldPassword, user.password);
 
     if (!oldPasswordMatch) {
-      return res.status(400).json({ message: "password didnt match!" });
+      return res.status(400).json({ message: "password didn't match!" });
     }
 
     const updatedPassword = await bcryptjs.hash(newPassword, 10);
@@ -129,25 +129,21 @@ export const updatePassword = async (req, res) => {
 
     res
       .status(200)
-      .json({ success: true, message: "Password updated succesfully!" });
+      .json({ success: true, message: "Password changed succesfully!" });
   } catch (error) {
     console.error("update Error:", error);
     res
       .status(500)
-      .json({ success: false, message: "Failed to Update password!" });
+      .json({ success: false, message: "Failed to change password!" });
   }
 };
 
 // --------------------------------------------Forget password--------------------------------------------------
 
 export const forgotPassword = async (req, res) => {
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid email address.",
-    });
-  }
   try {
+    const { email } = req.body;
+
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -167,9 +163,10 @@ export const forgotPassword = async (req, res) => {
 
     // send email
     await sendPasswordResetEmail(
-      `http://localhost:5173/auth/reset-password/${resetToken}`
+      user.email,
+      `http://localhost:5173/admin/reset-password/${resetToken}`
     );
-    send;
+
     res.status(200).json({
       success: true,
       message: "Password reset link sent to your email",

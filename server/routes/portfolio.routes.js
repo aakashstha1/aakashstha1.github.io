@@ -1,8 +1,10 @@
 import express from "express";
 import {
+  forgotPassword,
   login,
   logout,
   register,
+  resetPassword,
   updatePassword,
 } from "../controllers/user.controller.js";
 import { authentication } from "../middleware/authentication.js";
@@ -22,6 +24,8 @@ router.route("/admin/register").post(register);
 router.route("/admin/login").post(login);
 router.route("/admin/logout").post(logout);
 router.route("/admin/update").put(authentication, updatePassword);
+router.route("/admin/forgot-password").post(forgotPassword);
+router.route("/admin/reset-password/:token").post(resetPassword);
 
 //Intro routes
 router.route("/get-intro").get(getIntro);

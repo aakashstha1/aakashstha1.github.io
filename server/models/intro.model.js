@@ -27,6 +27,11 @@ const introSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    resume: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   {
