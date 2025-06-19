@@ -8,7 +8,7 @@ import SocialMedia from "../../components/SocialMedia";
 import Experiences from "../../components/Experiences";
 import { useEffect, useState } from "react";
 import ScreenLoader from "../../components/ScreenLoader";
-import ShootingStar from "../../components/ShootingStar";
+import VisitCounter from "../../components/VisitCounter.jsx";
 function Home() {
   const [loading, setLoading] = useState(false);
 
@@ -23,11 +23,12 @@ function Home() {
   }, []);
   return (
     <div>
+      <VisitCounter />
+
       {loading ? (
         <ScreenLoader />
       ) : (
         <>
-          <ShootingStar />
           <Navbar />
           <div className="bg-primary px-40 sm:px-5">
             <Intro />

@@ -7,6 +7,7 @@ import portfolioRoutes from "./routes/portfolio.routes.js";
 import projectRoutes from "./routes/project.routes.js";
 import expRoutes from "./routes/experience.routes.js";
 // import path from "path";
+
 dotenv.config({});
 
 const app = express();
@@ -27,6 +28,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api", portfolioRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/exp", expRoutes);
+
 // app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 export default app;

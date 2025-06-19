@@ -9,6 +9,7 @@ function AdminAbout() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [loading, setLoading] = useState(false);
+  const [count, setCount] = useState("");
 
   const [formData, setFormData] = useState({
     description1: "",
@@ -23,6 +24,10 @@ function AdminAbout() {
           withCredentials: true,
         });
 
+        const counter = await axios.get(`${API_URL}/count`, {
+          withCredentials: true,
+        });
+        setCount(counter.data?.count);
         const data = res.data.data;
         setFormData({
           description1: data.description1 || "",
@@ -114,6 +119,11 @@ function AdminAbout() {
           required
           rows={2}
         />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <h1 className="font-semibold text-xl">Total Visit :</h1>
+        <h2 className="font-semibold">{count}</h2>
       </div>
 
       <div className="flex justify-end">

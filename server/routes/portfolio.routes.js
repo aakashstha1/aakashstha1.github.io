@@ -16,6 +16,10 @@ import {
   // updateContact,
 } from "../controllers/contact.controller.js";
 import { getLinks, updateLinks } from "../controllers/link.controller.js";
+import {
+  getVisitCount,
+  incrementVisitCount,
+} from "../controllers/visit.controller.js";
 
 const router = express.Router();
 
@@ -43,5 +47,9 @@ router.route("/sendMsg").post(sendMsg);
 //Links routes
 router.route("/get-links").get(getLinks);
 router.route("/update-links").put(authentication, updateLinks);
+
+//Visit Counter
+router.route("/visit").post(incrementVisitCount);
+router.route("/count").get(getVisitCount);
 
 export default router;

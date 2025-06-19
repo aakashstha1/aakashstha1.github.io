@@ -76,12 +76,10 @@ function Dashboard() {
     }
   };
 
-  const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key="changePassword">Change Password</Menu.Item>
-      <Menu.Item key="logout">Logout</Menu.Item>
-    </Menu>
-  );
+  const dropdownItems = [
+    { key: "changePassword", label: "Change Password" },
+    { key: "logout", label: "Logout" },
+  ];
 
   return (
     <>
@@ -90,7 +88,12 @@ function Dashboard() {
           Admin Dashboard
         </h1>
       </div>
-      <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+
+      <Dropdown
+        menu={{ items: dropdownItems, onClick: handleMenuClick }}
+        placement="bottomRight"
+        trigger={["click"]}
+      >
         <div className="absolute top-8 right-10 cursor-pointer">
           <SettingOutlined className="text-white" />
         </div>
