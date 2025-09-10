@@ -61,7 +61,7 @@ export const updateLinks = async (req, res) => {
     link.linkedinURL = linkedinURL || link.linkedinURL;
     link.githubURL = githubURL || link.githubURL;
 
-    const savedLink = await about.save();
+    const savedLink = await link.save();
 
     res.status(200).json({
       success: true,

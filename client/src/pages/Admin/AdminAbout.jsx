@@ -28,6 +28,8 @@ function AdminAbout() {
           withCredentials: true,
         });
         setCount(counter.data?.count);
+
+        
         const data = res.data.data;
         setFormData({
           description1: data.description1 || "",
