@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
+import { config } from "dotenv";
 
 import portfolioRoutes from "./routes/portfolio.routes.js";
 import projectRoutes from "./routes/project.routes.js";
@@ -10,7 +10,7 @@ import achievementRoutes from "./routes/achievement.routes.js";
 
 // import path from "path";
 
-dotenv.config({});
+config({ quiet: true });
 
 const app = express();
 

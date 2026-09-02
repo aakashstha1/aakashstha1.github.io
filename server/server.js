@@ -3,6 +3,9 @@ import app from "./app.js";
 import { connectDB } from "./db/conn.js";
 import { generateSnapshot } from "./utils/snapshot.js";
 import { startSnapshotCron } from "./cron/snapshot.cron.js";
+import { config } from "dotenv";
+
+config({ quiet: true });
 
 const PORT = process.env.PORT || 5000;
 
